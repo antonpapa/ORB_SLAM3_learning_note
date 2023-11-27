@@ -1752,7 +1752,7 @@ void Tracking::PreintegrateIMU()
     // 没有imu数据,不进行预积分
     if(mlQueueImuData.size() == 0)
     {
-        Verbose::PrintMess("Not IMU data in mlQueueImuData!!", Verbose::VERBOSITY_NORMAL);
+        Verbose::PrintMess("Not IMU data in mlQueueImuData!!", Verbose::VERBOSITY_NORMAL);//VERBOSITY输出日志的格式设置，normal就是普通。
         mCurrentFrame.setIntegrated();
         return;
     }
