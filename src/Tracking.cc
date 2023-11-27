@@ -1734,11 +1734,11 @@ void Tracking::GrabImuData(const IMU::Point &imuMeasurement)
 }
 
 /**
- * @brief 预积分，对于一个帧有两种预积分，一种是相对于上一帧，一种是相对于上一个关键帧
+ * @brief 预积分，对于一个帧有两种预积分，一种是相对于上一帧，一种是相对于上一个关键帧!!!
  */
 void Tracking::PreintegrateIMU()
 {
-    // Step 1.拿到两两帧之间待处理的预积分数据，组成一个集合
+    // Step 1.拿到两帧之间待处理的预积分数据，组成一个集合
     // 上一帧不存在,说明两帧之间没有imu数据，不进行预积分
     if(!mCurrentFrame.mpPrevFrame)
     {
