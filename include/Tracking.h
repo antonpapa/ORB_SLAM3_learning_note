@@ -44,7 +44,7 @@
 
 namespace ORB_SLAM3
 {
-
+//申明一下tracking中会出现的类
 class Viewer;
 class FrameDrawer;
 class Atlas;
@@ -63,7 +63,7 @@ public:
 
     ~Tracking();
 
-    // Parse the config file
+    // Parse the config file，分析配置文件
     bool ParseCamParamFile(cv::FileStorage &fSettings);
     bool ParseORBParamFile(cv::FileStorage &fSettings);
     bool ParseIMUParamFile(cv::FileStorage &fSettings);
@@ -75,9 +75,9 @@ public:
 
     void GrabImuData(const IMU::Point &imuMeasurement);
 
-    void SetLocalMapper(LocalMapping* pLocalMapper);
-    void SetLoopClosing(LoopClosing* pLoopClosing);
-    void SetViewer(Viewer* pViewer);
+    void SetLocalMapper(LocalMapping* pLocalMapper);//声明本地建图函数
+    void SetLoopClosing(LoopClosing* pLoopClosing);//声明回环函数
+    void SetViewer(Viewer* pViewer);//声明可视化函数
     void SetStepByStep(bool bSet);
     bool GetStepByStep();
 
