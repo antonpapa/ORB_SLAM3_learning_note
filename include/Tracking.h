@@ -19,7 +19,7 @@
 
 #ifndef TRACKING_H
 #define TRACKING_H
-//1222222222
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
@@ -63,7 +63,7 @@ public:
 
     ~Tracking();
 
-    // Parse the config file
+    // Parse the config file，确定配置文件是否加载
     bool ParseCamParamFile(cv::FileStorage &fSettings);
     bool ParseORBParamFile(cv::FileStorage &fSettings);
     bool ParseIMUParamFile(cv::FileStorage &fSettings);
@@ -75,20 +75,27 @@ public:
 
     void GrabImuData(const IMU::Point &imuMeasurement);
 
-    void SetLocalMapper(LocalMapping* pLocalMapper);
-    void SetLoopClosing(LoopClosing* pLoopClosing);
-    void SetViewer(Viewer* pViewer);
+    void SetLocalMapper(LocalMapping* pLocalMapper);//声明本地建图函数
+    void SetLoopClosing(LoopClosing* pLoopClosing);//声明回环函数
+    void SetViewer(Viewer* pViewer);//声明可视化函数
     void SetStepByStep(bool bSet);
     bool GetStepByStep();
 
     // Load new settings
     // The focal lenght should be similar or scale prediction will fail when projecting points
-    void ChangeCalibration(const string &strSettingPath);
+    void ChangeCalibration(const string &strSettingPath);//加载新配置文件
 
     // Use this function if you have deactivated local mapping and you only want to localize the camera.
-    void InformOnlyTracking(const bool &flag);
+    void InformOnlyTracking(const bool &flag);//tracking only，not map，声明这个函数
 
+ /**
+ * @brief 更新了关键帧的位姿，但需要修改普通帧的位姿，因为正常跟踪需要普通帧
+ * @param  s 尺度
+ * @param  b 初始化后第一帧的偏置
+ * @param  pCurrentKeyFrame 当前关键帧
+ */
     void UpdateFrameIMU(const float s, const IMU::Bias &b, KeyFrame* pCurrentKeyFrame);
+
     KeyFrame* GetLastKeyFrame()
     {
         return mpLastKeyFrame;
@@ -128,8 +135,8 @@ public:
         OK_KLT=5
     };
 
-    eTrackingState mState;
-    eTrackingState mLastProcessedState;
+    eTrackingState mState;//目前tracking系统的状态
+    eTrackingState mLastProcessedState;//上一个tracking进程的状态
 
     // Input sensor
     int mSensor;
@@ -140,12 +147,12 @@ public:
 
     cv::Mat mImGray;
 
-    // Initialization Variables (Monocular)
-    std::vector<int> mvIniLastMatches;
-    std::vector<int> mvIniMatches;
-    std::vector<cv::Point2f> mvbPrevMatched;
-    std::vector<cv::Point3f> mvIniP3D;
-    Frame mInitialFrame;
+    // Initialization Variables (Monocular)，单目初始化
+    std::vector<int> mvIniLastMatches;   // 上一帧与初始化帧的匹配关系
+    std::vector<int> mvIniMatches;       // 当前帧与初始化帧的匹配关系
+    std::vector<cv::Point2f> mvbPrevMatched; // 上一帧中与初始化帧成功匹配的特征点
+    std::vector<cv::Point3f> mvIniP3D;   // 初始化帧中对应的三维点
+    Frame mInitialFrame;                  // 初始化帧的图像帧
 
     // Lists used to recover the full camera trajectory at the end of the execution.
     // Basically we store the reference keyframe for each frame and its relative transformation
@@ -176,20 +183,21 @@ public:
 
     bool mbWriteStats;
 
+//统计时间以便在程序执行过程中进行性能分析
 #ifdef REGISTER_TIMES
-    void LocalMapStats2File();
-    void TrackStats2File();
-    void PrintTimeStats();
+    void LocalMapStats2File();  // 将局部地图的统计信息输出到文件
+    void TrackStats2File();     // 将跟踪的统计信息输出到文件
+    void PrintTimeStats();      // 打印时间统计信息
 
-    vector<double> vdRectStereo_ms;
-    vector<double> vdResizeImage_ms;
-    vector<double> vdORBExtract_ms;
-    vector<double> vdStereoMatch_ms;
-    vector<double> vdIMUInteg_ms;
-    vector<double> vdPosePred_ms;
-    vector<double> vdLMTrack_ms;
-    vector<double> vdNewKF_ms;
-    vector<double> vdTrackTotal_ms;
+    vector<double> vdRectStereo_ms;   // 矫正立体图像的时间统计
+    vector<double> vdResizeImage_ms;  // 调整图像大小的时间统计
+    vector<double> vdORBExtract_ms;   // ORB特征提取的时间统计
+    vector<double> vdStereoMatch_ms;  // 立体匹配的时间统计
+    vector<double> vdIMUInteg_ms;     // IMU积分的时间统计
+    vector<double> vdPosePred_ms;     // 姿态预测的时间统计
+    vector<double> vdLMTrack_ms;      // 局部地图跟踪的时间统计
+    vector<double> vdNewKF_ms;        // 插入新关键帧的时间统计
+    vector<double> vdTrackTotal_ms;   // 跟踪总时间的时间统计
 #endif
 
 protected:
