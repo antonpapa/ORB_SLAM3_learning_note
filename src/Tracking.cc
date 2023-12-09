@@ -2125,7 +2125,8 @@ void Tracking::Track()
         bool bOK;
 
 #ifdef REGISTER_TIMES
-        std::chrono::steady_clock::time_point time_StartPosePred = std::chrono::steady_clock::now();
+	//std::chrono::steady_clock::time_point用于获取当前时间，这里赋值给time_StartPosePred，方便这段操作结束后记录用时，用于测评性能
+        std::chrono::steady_clock::time_point time_StartPosePred = std::chrono::steady_clock::now();//time_StartPosePred 被用于记录姿态预测的开始时间点。
 #endif
 
         // Initial camera pose estimation using motion model or relocalization (if tracking is lost)
