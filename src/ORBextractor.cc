@@ -475,7 +475,7 @@ ORBextractor::ORBextractor(int _nfeatures,		//指定要提取的特征点数目
     iniThFAST(_iniThFAST), minThFAST(_minThFAST)//设置这些参数
 {
 	//存储每层图像缩放系数的vector调整为符合图层数目的大小
-    mvScaleFactor.resize(nlevels);  
+    mvScaleFactor.resize(nlevels);//有几层，就有几个缩放系数  
 	//存储这个sigma^2，其实就是每层图像相对初始图像缩放因子的平方
     mvLevelSigma2.resize(nlevels);
 	//对于初始图像，这两个参数都是1
