@@ -54,7 +54,7 @@ public:
     
     enum {HARRIS_SCORE=0, FAST_SCORE=1 };//匿名枚举，哈里斯角点则为0，fast角点则为1
 
-//int _nfeatures,		//指定要提取的特征点
+//int _nfeatures,		//指定要提取的特征点数目
 //float _scaleFactor,	//指定图像金字塔的缩放系数
 //int _nlevels,		    //指定图像金字塔的层数
 //int _iniThFAST,		//指定初始的FAST特征点提取参数，可以提取出最明显的角点
