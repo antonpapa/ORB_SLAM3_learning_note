@@ -56,9 +56,12 @@ int main(int argc, char **argv)
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR,true);
 
-    ImageGrabber igb(&SLAM);
+    ImageGrabber igb(&SLAM);//创建属于ImageGrabber类的对象 igb，并传入参数&SLAM（由ORB_SLAM3::System SLAM构造），这是一个指向SLAM的指针
 
-    ros::NodeHandle nodeHandler;
+    ros::NodeHandle nodeHandler;//创建ros句柄
+    //创建ros的订阅者，定阅话题为“/camera/image_raw”下的内容，指定消息队列大小为1
+    //回调函数类型为ImageGrabber 类的 GrabImage
+    //执行对象为ImageGrabber类下的igb对象
     ros::Subscriber sub = nodeHandler.subscribe("/camera/image_raw", 1, &ImageGrabber::GrabImage,&igb);
 
     ros::spin();
@@ -74,6 +77,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
+//GrabImage的具体实现
 void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 {
     // Copy the ros image message to cv::Mat.
