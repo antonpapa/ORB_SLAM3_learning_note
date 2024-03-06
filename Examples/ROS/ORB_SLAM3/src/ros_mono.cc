@@ -30,15 +30,15 @@
 #include"../../../include/System.h"
 
 using namespace std;
-
+//构造一个图像抓取类“ImageGrabber”,从传感器中获取图像
 class ImageGrabber
 {
 public:
-    ImageGrabber(ORB_SLAM3::System* pSLAM):mpSLAM(pSLAM){}
+    ImageGrabber(ORB_SLAM3::System* pSLAM):mpSLAM(pSLAM){};//构造函数，接受一个Sysytem*类的pSLAM,赋值给mpSLAM（m表示是类的成员，p表示指针）
 
-    void GrabImage(const sensor_msgs::ImageConstPtr& msg);
+    void GrabImage(const sensor_msgs::ImageConstPtr& msg);//成员函数，从传感器中获取图像
 
-    ORB_SLAM3::System* mpSLAM;
+    ORB_SLAM3::System* mpSLAM;//类成员，mpSLAM
 };
 
 int main(int argc, char **argv)
