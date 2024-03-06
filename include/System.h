@@ -80,10 +80,10 @@ class LocalMapping;
 class LoopClosing;
 class Settings;
 
-class System
+class System//定义system类
 {
 public:
-    // Input sensor
+    // Input sensor//枚举类，用于选择传感器类型
     enum eSensor{
         MONOCULAR=0,
         STEREO=1,
@@ -95,14 +95,20 @@ public:
 
     // File type
     enum FileType{
-        TEXT_FILE=0,
-        BINARY_FILE=1,
+        TEXT_FILE=0,//文本文件
+        BINARY_FILE=1,//二进制
     };
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true, const int initFr = 0, const string &strSequence = std::string());
+    System(const string &strVocFile,    //词袋文件所在路径
+    const string &strSettingsFile,          //配置文件所在路径
+    const eSensor sensor,                   //传感器类型
+    const bool bUseViewer = true,                  //是否使用可视化界面
+    const int initFr = 0                    //表示初始化帧的id,开始设置为0 
+    const string &strSequence = std::string()//序列名,在跟踪线程和局部建图线程用得到
+    )；//声明system函数
 
     // Proccess the given stereo frame. Images must be synchronized and rectified.
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
