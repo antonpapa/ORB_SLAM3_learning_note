@@ -71,12 +71,12 @@ namespace ORB_SLAM3 {
         cv::Mat camera1DistortionCoef() {return cv::Mat(vPinHoleDistorsion1_.size(),1,CV_32F,vPinHoleDistorsion1_.data());}
         cv::Mat camera2DistortionCoef() {return cv::Mat(vPinHoleDistorsion2_.size(),1,CV_32F,vPinHoleDistorsion1_.data());}
 
-        Sophus::SE3f Tlr() {return Tlr_;}
-        float bf() {return bf_;}
-        float b() {return b_;}
+        Sophus::SE3f Tlr() {return Tlr_;}//T为一个SE（3）群，表示双目相机两个摄像头的位置关系
+        float bf() {return bf_;}//bf means baseline * focus
+        float b() {return b_;}//b means baseline
         float thDepth() {return thDepth_;}
 
-        bool needToUndistort() {return bNeedToUndistort_;}
+        bool needToUndistort() {return bNeedToUndistort_;}//distoration or not 
 
         cv::Size newImSize() {return newImSize_;}
         float fps() {return fps_;}
@@ -84,16 +84,16 @@ namespace ORB_SLAM3 {
         bool needToResize() {return bNeedToResize1_;}
         bool needToRectify() {return bNeedToRectify_;}
 
-        float noiseGyro() {return noiseGyro_;}
-        float noiseAcc() {return noiseAcc_;}
+        float noiseGyro() {return noiseGyro_;}//陀螺仪中的噪声
+        float noiseAcc() {return noiseAcc_;}//加速度计的噪声
         float gyroWalk() {return gyroWalk_;}
         float accWalk() {return accWalk_;}
         float imuFrequency() {return imuFrequency_;}
-        Sophus::SE3f Tbc() {return Tbc_;}
+        Sophus::SE3f Tbc() {return Tbc_;}//一个变换矩阵，代表从相机到body（如果有imu的话即使imu）的变换
         bool insertKFsWhenLost() {return insertKFsWhenLost_;}
 
         float depthMapFactor() {return depthMapFactor_;}
-
+        //下面这块和特征点的提取相关
         int nFeatures() {return nFeatures_;}
         int nLevels() {return nLevels_;}
         float initThFAST() {return initThFAST_;}
