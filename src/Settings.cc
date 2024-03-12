@@ -33,10 +33,17 @@ using namespace std;
 namespace ORB_SLAM3
 {
 
-template <>
-float Settings::readParameter<float>(cv::FileStorage &fSettings, const std::string &name, bool &found, const bool required)
+template <>//特化模板函数的声明，相比于通用模板函数，特化模板函数在接受到特定的类型会优先执行此函数
+          //从下面几个不同的特化模板函数可以看出，fsettings中不同的部分类型可能不一样，直接写一个
+          //通用的模板函数可能无法顾及全部，比如当你要处理的部分是一个vector<int>类型的变量，你需要
+          //遍历输出其所有项，直接iterator迭代就可以了，但是加入传入的是一个cv::mat类型的对象，则不能
+          //直接套用，就需要为cv::mat这个特化的类定义一个特化模板函数，接受到mat时优先调用特化模板函数，而不是通用的模板函数。
+float Settings::readParameter<float>(cv::FileStorage &fSettings, //配置文件
+    const std::string &name, //配置文件中所需调用部分的名字
+    bool &found, //是否找到
+    const bool required)//是否必须
 {
-    cv::FileNode node = fSettings[name];
+    cv::FileNode node = fSettings[name];//把要调用部分的内容复制给node，在之后的处理中可以使用nod代替，方便编程
     if (node.empty())
     {
         if (required)
@@ -148,7 +155,10 @@ cv::Mat Settings::readParameter<cv::Mat>(cv::FileStorage &fSettings, const std::
     }
 }
 
-Settings::Settings(const std::string &configFile, const int &sensor) : bNeedToUndistort_(false), bNeedToRectify_(false), bNeedToResize1_(false), bNeedToResize2_(false)
+Settings::Settings(
+    const std::string &configFile, //配置文件（yaml）
+    const int &sensor//传感器类型
+    ) : bNeedToUndistort_(false), bNeedToRectify_(false), bNeedToResize1_(false), bNeedToResize2_(false)
 {
     sensor_ = sensor;
 
@@ -167,10 +177,10 @@ Settings::Settings(const std::string &configFile, const int &sensor) : bNeedToUn
     }
 
     // Read first camera
-    readCamera1(fSettings);
+    readCamera1(fSettings);//用于获取相机类型、相机内参以及是否要去畸变等信息
     cout << "\t-Loaded camera 1" << endl;
 
-    // Read second camera if stereo (not rectified)
+    // Read second camera if stereo (not rectified)//如果是双目相机，还得对另一个相机再执行一遍上述操作
     if (sensor_ == System::STEREO || sensor_ == System::IMU_STEREO)
     {
         readCamera2(fSettings);
@@ -178,10 +188,10 @@ Settings::Settings(const std::string &configFile, const int &sensor) : bNeedToUn
     }
 
     // Read image info
-    readImageInfo(fSettings);
+    readImageInfo(fSettings);//用于获取相机捕捉的图像信息，比如图像尺寸、图像类型以及是否要对其缩放等
     cout << "\t-Loaded image info" << endl;
 
-    if (sensor_ == System::IMU_MONOCULAR || sensor_ == System::IMU_STEREO || sensor_ == System::IMU_RGBD)
+    if (sensor_ == System::IMU_MONOCULAR || sensor_ == System::IMU_STEREO || sensor_ == System::IMU_RGBD)//如果还有imu的话，也要对imu做一遍上述处理以获取信息
     {
         readIMU(fSettings);
         cout << "\t-Loaded IMU calibration" << endl;
@@ -192,7 +202,9 @@ Settings::Settings(const std::string &configFile, const int &sensor) : bNeedToUn
         readRGBD(fSettings);
         cout << "\t-Loaded RGB-D calibration" << endl;
     }
-
+    //一下就不赘述了，都是依次读取存储在fSettings文件里各个部分的参数，比如读取ORB特征点什么的，
+    //在这些函数中，它在读取完相关部分后都会将某些变量值做处理后
+    //传给成员变量，或者直接传给成员变量，以供之后的函数调用
     readORB(fSettings);
     cout << "\t-Loaded ORB settings" << endl;
     readViewer(fSettings);
@@ -201,7 +213,10 @@ Settings::Settings(const std::string &configFile, const int &sensor) : bNeedToUn
     cout << "\t-Loaded Atlas settings" << endl;
     readOtherParameters(fSettings);
     cout << "\t-Loaded misc parameters" << endl;
-
+    
+    //这个bNeedToRectify_就是个典型的例子，我们可以在readCamera中找到它，当函数对传入的fSettings进行处理时
+    //其在内部调用readParameter<float>(fSettings, "Camera2.k1", found, false);读取到了fSettings中的"Camera2.k1"部分
+    //把"Camera2.k1"部分的bNeedToRectify变量值传给bNeedToRectify_这个内部的成员变量，这里就是对其成员变量的一个调用
     if (bNeedToRectify_)
     {
         precomputeRectificationMaps();
