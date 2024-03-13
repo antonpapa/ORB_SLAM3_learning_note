@@ -58,10 +58,19 @@ class Tracking
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
-             KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string());
+    //Tracking类的有参构造函数
+    Tracking(System* pSys,//指向系统类的指针
+    ORBVocabulary* pVoc, //指向词袋的指针
+    FrameDrawer* pFrameDrawer, //画图
+    MapDrawer* pMapDrawer, //画地图
+    Atlas* pAtlas,//指向atlas，即多地图系统的指针
+    KeyFrameDatabase* pKFDB, //关键帧词袋数据
+    const string &strSettingPath, //参数文件路径
+    const int sensor, //传感器类型
+    Settings* settings, //指向参数类的指针
+    const string &_nameSeq=std::string());
 
-    ~Tracking();
+    ~Tracking();//析构
 
     // Parse the config file，确定配置文件是否加载
     bool ParseCamParamFile(cv::FileStorage &fSettings);
@@ -69,7 +78,11 @@ public:
     bool ParseIMUParamFile(cv::FileStorage &fSettings);
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
-    Sophus::SE3f GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight, const double &timestamp, string filename);
+    //对输入数据（图像、imu等）做一个预处理并且调用track（）函数，提取特征点并做匹配
+    Sophus::SE3f GrabImageStereo(const cv::Mat &imRectLeft,//左图
+                                 const cv::Mat &imRectRight, //右图
+                                 const double &timestamp, //时间戳
+                                 string filename);//文件名
     Sophus::SE3f GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp, string filename);
     Sophus::SE3f GrabImageMonocular(const cv::Mat &im, const double &timestamp, string filename);
 
@@ -82,7 +95,7 @@ public:
     bool GetStepByStep();
 
     // Load new settings
-    // The focal lenght should be similar or scale prediction will fail when projecting points
+    // The focal length should be similar or scale prediction will fail when projecting points
     void ChangeCalibration(const string &strSettingPath);//加载新配置文件
 
     // Use this function if you have deactivated local mapping and you only want to localize the camera.
