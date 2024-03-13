@@ -63,13 +63,40 @@ namespace ORB_SLAM3
  * @param settings 参数类
  * @param _strSeqName 序列名字，没用到
  */
-Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
-    Atlas *pAtlas, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq)
-    : mState(NO_IMAGES_YET), mSensor(sensor), mTrackedFr(0), mbStep(false),
-    mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpKeyFrameDB(pKFDB),
-    mbReadyToInitializate(false), mpSystem(pSys), mpViewer(NULL), bStepByStep(false),
-    mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpAtlas(pAtlas), mnLastRelocFrameId(0), time_recently_lost(5.0),
-    mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL))
+Tracking::Tracking(System *pSys, //系统类指针
+		   ORBVocabulary* pVoc, //词典
+		   FrameDrawer *pFrameDrawer, //画图像的
+                   MapDrawer *pMapDrawer,//画地图的
+    		   Atlas *pAtlas, //atlas线程
+		   KeyFrameDatabase* pKFDB, //关键帧词典数据库
+		   const string &strSettingPath, //参数文件路径
+		   const int sensor,// 传感器类型
+		   Settings* settings, //参数类
+		   const string &_nameSeq):
+		   mState(NO_IMAGES_YET), //开始时，默认状态为无图像
+		   //把括号里收到的参数传给成员对象
+		   mSensor(sensor), 
+		   mTrackedFr(0),
+	           mbStep(false),
+    		   mbOnlyTracking(false),
+		   mbMapUpdated(false),
+		   mbVO(false),
+	           mpORBVocabulary(pVoc),
+		   mpKeyFrameDB(pKFDB),
+   		   mbReadyToInitializate(false),
+		   mpSystem(pSys), 
+		   mpViewer(NULL), 
+		   bStepByStep(false),
+    		   mpFrameDrawer(pFrameDrawer), 
+		   mpMapDrawer(pMapDrawer),
+		   mpAtlas(pAtlas),
+		   mnLastRelocFrameId(0), 
+		   time_recently_lost(5.0),
+    		   mnInitialFrameId(0), 
+		   mbCreatedMap(false), 
+		   mnFirstFrameId(0), 
+		   mpCamera2(nullptr),
+		   mpLastKeyFrame(static_cast<KeyFrame*>(NULL))
 {
     // Load camera parameters from settings file
     // Step 1 从配置文件中加载相机参数
@@ -117,9 +144,9 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
             }
         }
     }
-
+    //初始帧的id和上一帧的id
     initID = 0; lastID = 0;
-    mbInitWith3KFs = false;
+    mbInitWith3KFs = false;//是否用前三张关键帧做初始化
     mnNumDataset = 0;
 
     // 遍历下地图中的相机，然后打印出来了
@@ -154,7 +181,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     vdTrackTotal_ms.clear();
 #endif
 }
-
+//下面这一串ifdef到endif都没啥好看的，用于系统的线程的一些预处理
 #ifdef REGISTER_TIMES
 double calcAverage(vector<double> v_times)
 {
@@ -550,7 +577,7 @@ void Tracking::PrintTimeStats()
 }
 
 #endif
-
+//Tracking的析构函数
 Tracking::~Tracking()
 {
     //f_track_stats.close();
@@ -563,11 +590,11 @@ Tracking::~Tracking()
  */
 void Tracking::newParameterLoader(Settings *settings) {
     // 1. 读取相机1
-    mpCamera = settings->camera1();
-    mpCamera = mpAtlas->AddCamera(mpCamera);
+    mpCamera = settings->camera1();//把参数文件里的cameral1的值赋给成员变量mpcamera
+    mpCamera = mpAtlas->AddCamera(mpCamera);//在地图中添加相机
 
-    if(settings->needToUndistort()){
-        mDistCoef = settings->camera1DistortionCoef();
+    if(settings->needToUndistort()){//判断是否要做去畸变
+        mDistCoef = settings->camera1DistortionCoef();//要的话就把参数文件里的camera1DistortionCoef()值赋给这个去畸变矩阵
     }
     else{
         mDistCoef = cv::Mat::zeros(4,1,CV_32F);
@@ -576,7 +603,7 @@ void Tracking::newParameterLoader(Settings *settings) {
     //TODO: missing image scaling and rectification
     mImageScale = 1.0f;
 
-    mK = cv::Mat::eye(3,3,CV_32F);
+    mK = cv::Mat::eye(3,3,CV_32F);//内参矩阵fx，fy，cx，cy这几个值
     mK.at<float>(0,0) = mpCamera->getParameter(0);
     mK.at<float>(1,1) = mpCamera->getParameter(1);
     mK.at<float>(0,2) = mpCamera->getParameter(2);
@@ -588,20 +615,20 @@ void Tracking::newParameterLoader(Settings *settings) {
     mK_(0,2) = mpCamera->getParameter(2);
     mK_(1,2) = mpCamera->getParameter(3);
 
-    // 读取相机2
+    // 读取相机2，如果是双目相机才会调用这个函数
     if((mSensor==System::STEREO || mSensor==System::IMU_STEREO || mSensor==System::IMU_RGBD) &&
         settings->cameraType() == Settings::KannalaBrandt){
         mpCamera2 = settings->camera2();
-        mpCamera2 = mpAtlas->AddCamera(mpCamera2);
+        mpCamera2 = mpAtlas->AddCamera(mpCamera2);//把第二个相机加入地图中来
 
-        mTlr = settings->Tlr();
+        mTlr = settings->Tlr();//双目相机左右图像的变换矩阵
 
         mpFrameDrawer->both = true;
     }
 
     // 读取双目
     if(mSensor==System::STEREO || mSensor==System::RGBD || mSensor==System::IMU_STEREO || mSensor==System::IMU_RGBD ){
-        mbf = settings->bf();
+        mbf = settings->bf();//双目相机的基线baseline
         mThDepth = settings->b() * settings->thDepth();
     }
 
@@ -1259,11 +1286,14 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
  */
 bool Tracking::ParseORBParamFile(cv::FileStorage &fSettings)
 {
-    bool b_miss_params = false;
-    int nFeatures, nLevels, fIniThFAST, fMinThFAST;
-    float fScaleFactor;
+    bool b_miss_params = false;//检查有没有读到，默认有
+    int nFeatures,// 指定要提取的特征点数目
+    nLevels, //金字塔层数
+    fIniThFAST, //指定初始的FAST特征点提取参数，可以提取出最明显的角点
+    fMinThFAST;//提取不到初始设置的那么多时，最小需要提取到的个数
+    float fScaleFactor;//缩放系数
 
-    cv::FileNode node = fSettings["ORBextractor.nFeatures"];
+    cv::FileNode node = fSettings["ORBextractor.nFeatures"];//读取fSettings参数文件里的ORBextractor.nFeatures参数的值，并赋给成员对象node方便后续操作
     if(!node.empty() && node.isInt())
     {
         nFeatures = node.operator int();
@@ -1323,7 +1353,7 @@ bool Tracking::ParseORBParamFile(cv::FileStorage &fSettings)
         return false;
     }
 
-    mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
+    mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);//左图特征点
 
     if(mSensor==System::STEREO || mSensor==System::IMU_STEREO)
         mpORBextractorRight = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
@@ -1349,7 +1379,7 @@ bool Tracking::ParseIMUParamFile(cv::FileStorage &fSettings)
 {
     bool b_miss_params = false;
 
-    cv::Mat cvTbc;
+    cv::Mat cvTbc;//camera到body的变换矩阵，有imu时body就是imu
     cv::FileNode node = fSettings["Tbc"];
     if(!node.empty())
     {
@@ -1465,7 +1495,7 @@ bool Tracking::ParseIMUParamFile(cv::FileStorage &fSettings)
 
     mpImuCalib = new IMU::Calib(Tbc,Ng*sf,Na*sf,Ngw/sf,Naw/sf);
 
-    mpImuPreintegratedFromLastKF = new IMU::Preintegrated(IMU::Bias(),*mpImuCalib);
+    mpImuPreintegratedFromLastKF = new IMU::Preintegrated(IMU::Bias(),*mpImuCalib);//做预积分
 
 
     return true;
@@ -1524,9 +1554,9 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
 {
     //cout << "GrabImageStereo" << endl;
 
-    mImGray = imRectLeft;
-    cv::Mat imGrayRight = imRectRight;
-    mImRight = imRectRight;
+    mImGray = imRectLeft;//左灰度图对象
+    cv::Mat imGrayRight = imRectRight;//右灰度图
+    mImRight = imRectRight;右图
 
     // step 1 ：将RGB或RGBA图像转为灰度图像
     if(mImGray.channels()==3)
