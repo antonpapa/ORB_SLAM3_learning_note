@@ -27,7 +27,7 @@
 namespace ORB_SLAM3
 {
 
-class ExtractorNode//提取节点类
+class ExtractorNode//提取器节点类
 {
 public:
     ExtractorNode():bNoMore(false){}//默认构造函数声明，使bNoMore为false
@@ -36,16 +36,16 @@ public:
  * @brief 将提取器节点分成4个子节点，同时也完成图像区域的划分、特征点归属的划分，以及相关标志位的置位
  * 
  * @param[in & out] n1  提取器节点1：左上
- * @param[in & out] n2  提取器节点1：右上
- * @param[in & out] n3  提取器节点1：左下
- * @param[in & out] n4  提取器节点1：右下
+ * @param[in & out] n2  提取器节点2：右上
+ * @param[in & out] n3  提取器节点3：左下
+ * @param[in & out] n4  提取器节点4：右下
  */
     void DivideNode(ExtractorNode &n1, ExtractorNode &n2, ExtractorNode &n3, ExtractorNode &n4);
 
     std::vector<cv::KeyPoint> vKeys;//存储关键点的容器
-    cv::Point2i UL, UR, BL, BR;//像素点坐标（x，y）
+    cv::Point2i UL, UR, BL, BR;//像素点坐标（x，y），UL means UP LEFT(左上)
     std::list<ExtractorNode>::iterator lit;
-    bool bNoMore;//判断这个图像是否还可以继续分割
+    bool bNoMore;//判断这个图像是否还可以继续分割，分割成几个部分，就有几个提取器节点，节点的数目就是提取器的数目
 };
 
 class ORBextractor
@@ -59,9 +59,13 @@ public:
 //int _nlevels,		    //指定图像金字塔的层数
 //int _iniThFAST,		//指定初始的FAST特征点提取参数，可以提取出最明显的角点
 //int _minThFAST):	    //如果因为图像纹理不丰富提取出的特征点不多，为了达到想要的特征点数目，
-							//就使用这个参数提取出不是那么明显的角点
-    ORBextractor(int nfeatures, float scaleFactor, int nlevels,
-                 int iniThFAST, int minThFAST);//声明 ORBextractor函数
+			
+//声明 ORBextractor构造函数						
+    ORBextractor(int nfeatures,//要提取的特征点数目 
+		 float scaleFactor, //图像金字塔缩放
+		 int nlevels,//金字塔层数
+                 int iniThFAST,//指定初始的FAST特征点提取参数，可以提取出最明显的角点
+		 int minThFAST);//如果因为图像纹理不丰富提取出的特征点不多，为了达到想要的特征点数目，就使用这个参数提取那些不那么明显的参数
 
     ~ORBextractor(){}
 
@@ -72,7 +76,7 @@ public:
  * @brief 用仿函数（重载括号运算符）方法来计算图像特征点
  * 
  * @param[in] _image                    输入原始图的图像
- * @param[in] _mask                     掩码mask
+ * @param[in] _mask                     掩码mask，比如Mat等
  * @param[in & out] _keypoints          存储特征点关键点的向量
  * @param[in & out] _descriptors        存储特征点描述子的矩阵
  */
@@ -107,7 +111,7 @@ public:
 protected:
 
     void ComputePyramid(cv::Mat image);
-    void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);    
+    void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints); //以八叉树的结构存储关键点   
     std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                            const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
 
