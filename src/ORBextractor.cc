@@ -73,7 +73,7 @@ namespace ORB_SLAM3
 //
 	
 
-const int PATCH_SIZE = 31;			///<使用灰度质心法计算特征点的方向信息时，图像块的大小,或者说是直径
+const int PATCH_SIZE = 31;		///<使用灰度质心法计算特征点的方向信息时，图像块的大小,或者说是直径
 const int HALF_PATCH_SIZE = 15;		///<上面这个大小的一半，或者说是半径
 const int EDGE_THRESHOLD = 19;		///<算法生成的图像边
 //生成这个边的目的是进行图像金子塔的生成时，需要对图像进行高斯滤波处理，为了考虑到使滤波后的图像边界处的像素也能够携带有正确的图像信息，
@@ -85,20 +85,22 @@ const int EDGE_THRESHOLD = 19;		///<算法生成的图像边
  * 方法是灰度质心法：以几何中心和灰度质心的连线作为该特征点方向
  * @param[in] image     要进行操作的某层金字塔图像
  * @param[in] pt        当前特征点的坐标
- * @param[in] u_max     图像块的每一行的坐标边界 u_max
+ * @param[in] u_max     图像块的每一行的坐标边界 u_max（就是上面那个PATCH_SIZE指的那个图像块PATCH）
  * @return float        返回特征点的角度，范围为[0,360)角度，精度为0.3°
  */
 static float IC_Angle(const Mat& image, Point2f pt,  const vector<int> & u_max)
 {
 	//图像的矩，前者是按照图像块的y坐标加权，后者是按照图像块的x坐标加权
-    int m_01 = 0, m_10 = 0;
-
+    int m_01 = 0, m_10 = 0;//在一个小的图像块中，定义图像块的矩为：m_pq = ∑ x^p*y^q*I(x,y) x,y∈PATCH
+			   //灰度质心为（m_10/m_00,m_01/m_00）
+			   //链接图像块的几何中心与灰度质心得到一个向量，于是特征点的方向θ=arctan（m_01/m_10）
 	//获得这个特征点所在的图像块的中心点坐标灰度值的指针center
     const uchar* center = &image.at<uchar> (cvRound(pt.y), cvRound(pt.x));
 
     // Treat the center line differently, v=0
 	//这条v=0中心线的计算需要特殊对待
     //由于是中心行+若干行对，所以PATCH_SIZE应该是个奇数
+	//这里半径为15，直径为31（v=0这一行是中间行，上下各有15行）
     for (int u = -HALF_PATCH_SIZE; u <= HALF_PATCH_SIZE; ++u)
 		//注意这里的center下标u可以是负的！中心水平线上的像素按x坐标（也就是u坐标）加权
         m_10 += u * center[u];
